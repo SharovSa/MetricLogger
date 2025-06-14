@@ -17,7 +17,7 @@ public:
     /**
      * @brief Return the metric value.
      */
-    virtual const std::string getValue() = 0;
+    virtual std::string getValue() const = 0;
 
     /**
      * @brief Reset the metric value.

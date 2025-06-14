@@ -12,7 +12,7 @@ const std::string &CntMetric::getName() const
     return name_;
 }
 
-const std::string CntMetric::getValue()
+std::string CntMetric::getValue() const
 {
     return std::to_string(cnt_.load());
 }

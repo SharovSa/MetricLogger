@@ -24,6 +24,6 @@ public:
      */
     void add(double value);
     const std::string &getName() const override;
-    const std::string getValue() override;
+    std::string getValue() const override;
     void reset() override;
 };

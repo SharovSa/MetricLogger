@@ -14,7 +14,7 @@ const std::string &AvgMetric::getName() const
     return name_;
 }
 
-const std::string AvgMetric::getValue()
+std::string AvgMetric::getValue() const
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (count_ == 0)

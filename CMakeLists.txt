@@ -8,6 +8,7 @@ set(SOURCES
     src/metric_manager.cpp
     src/cnt_metric.cpp
     src/avg_metric.cpp
+    src/cpu_utilization_metric.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

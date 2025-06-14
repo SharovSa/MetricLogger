@@ -23,6 +23,6 @@ public:
     void add(unsigned long long value = 1);
 
     const std::string &getName() const override;
-    const std::string getValue() override;
+    std::string getValue() const override;
     void reset() override;
 };
