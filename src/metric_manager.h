@@ -95,6 +95,7 @@ public:
 template <typename T, typename... Args>
 T *MetricManager::addMetric(Args &...args)
 {
+    static_assert(std::is_base_of<IMetric, T>::value, "T must be a descendant of IMetric");
     auto metric = std::make_unique<T>(std::forward<Args>(args)...);
     T *ptr = metric.get();
     std::lock_guard<std::mutex> lock(metrics_mutex_);

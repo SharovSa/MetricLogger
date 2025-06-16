@@ -29,20 +29,39 @@ MetricLogger может логгировать выбранные пользов
 
     Подразумевается, что базовые типы метрик ([CntMetric](src/cnt_metric.h) и [AvgMetric](src/avg_metric.h)) будут получать оценки откуда-то извне, а сами просто обрабатывают их.
 
-## Запуск тестового примера
+## Запуск тестовых примеров
+
+### Тест 1:
+В тестовом примере логгируются: средняя утилизация ЦП (для этого нагружаются N-1 ядро математическими вычислениями), количество HTTP-запросов в интервал времени (количество запросов генерируется случайно) и среднее из случайных чисел за интервал времени. Интервал времени логгирования установлен на 1 секунду.
 1. Через g++
     ```bash 
-    g++ -std=c++17 -o metrics_app ./src/main.cpp ./src/metric_manager.cpp ./src/cnt_metric.cpp ./src/avg_metric.cpp ./src/cpu_utilization_metric.cpp -pthread
+    g++ -std=c++17 -o test1 ./src/test1.cpp ./src/metric_manager.cpp ./src/cnt_metric.cpp ./src/avg_metric.cpp ./src/cpu_utilization_metric.cpp -pthread
 
-    ./metrics_app (.exe для Windows)
+    ./test1 (.exe для Windows)
     ```
 2. Через cmake
     ```bash
     cmake -S . -B build
     cmake --build build
-    ./build/MetricLogger (.exe для Windows)
+    ./build/test1 (.exe для Windows)
+    ```
+
+### Тест 2:
+В тестовом примере сначала логгируется только количество HTTP-запросов с интервалом в 2 секунду на проятежении 5 секунд, а потом устанавливается интервал в 1 секунду и добавляется метрика средней утилизации CPU на 5 секунд.
+
+Способы  запуска:
+1. Через g++
+    ```bash 
+    g++ -std=c++17 -o test2 ./src/test2.cpp ./src/metric_manager.cpp ./src/cnt_metric.cpp ./src/avg_metric.cpp ./src/cpu_utilization_metric.cpp -pthread
+
+    ./test2 (.exe для Windows)
+    ```
+2. Через cmake
+    ```bash
+    cmake -S . -B build -DBUILD_TEST_1=OFF -DBUILD_TEST_2=ON
+    cmake --build build
+    ./build/test2 (.exe для Windows)
     ```
 
 Результат работы будет в файле metric.log
 
-В тестовом примере логгируются: средняя утилизация ЦП (для этого нагружаются N-1 ядро математическими вычислениями), количество HTTP-запросов в интервал времени (количество запросов генерируется случайно) и среднее из случайных чисел за интервал времени. Интервал времени логгирования установлен на 1 с.

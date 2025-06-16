@@ -20,7 +20,7 @@ void cpu_load_worker()
 
 int main()
 {
-    std::cout << "Start metric simulation \n";
+    std::cout << "Start metric simulation 2 \n";
 
     unsigned int num_threads = std::thread::hardware_concurrency();
     if (num_threads > 1)
@@ -32,6 +32,32 @@ int main()
         num_threads = 1;
     }
 
+    auto &mm = MetricManager::getInstance();
+    auto http_metric = mm.addMetric<CntMetric>("HTTP requests RPS");
+
+    mm.start("metrics.log", std::chrono::seconds(2));
+
+    std::cout << "Set logger interval to " << mm.getInterval().count() / 1000 << " second\n";
+
+    unsigned int seed = 42;
+    std::mt19937 gen(seed);
+    std::uniform_int_distribution<unsigned long long> http_metric_gen(10, 1000);
+
+    std::cout << "Start logging only HTTP metric for 5 seconds with metric values:\n";
+
+    auto finish_time = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+    while (std::chrono::steady_clock::now() < finish_time)
+    {
+        auto http_metric_value = http_metric_gen(gen);
+        http_metric->add(http_metric_value);
+        std::cout << "HTTP metric value: " << http_metric_value << std::endl;
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    auto cpu_metric = mm.addMetric<CpuUtilizationMetric>("CPU");
+    mm.setInterval(std::chrono::seconds(1));
+    std::cout << "Add CPU metric to logger and set time interval to " << mm.getInterval().count() / 1000 << " seconds\n";
     std::cout << "Starting " << num_threads << " CPU load threads..." << std::endl;
     std::vector<std::thread> load_threads;
     for (unsigned int i = 0; i < num_threads; ++i)
@@ -39,28 +65,12 @@ int main()
         load_threads.emplace_back(cpu_load_worker);
     }
 
-    auto &mm = MetricManager::getInstance();
-    auto cpu_metric = mm.addMetric<CpuUtilizationMetric>("CPU");
-    auto http_metric = mm.addMetric<CntMetric>("HTTP requests RPS");
-    auto rand_avg_metric = mm.addMetric<AvgMetric>("Rand Avg value");
-
-    // Start the logger with a 1-second interval
-    mm.start("metrics.log", std::chrono::seconds(1));
-    unsigned int seed = 42;
-    std::mt19937 gen(seed);
-    std::uniform_real_distribution<double> rand_metric_gen(0, 2);
-    std::uniform_int_distribution<unsigned long long> http_metric_gen(10, 1000);
-
-    std::cout << "Start logging for 10 seconds with metric values:\n";
-
-    auto finish_time = std::chrono::steady_clock::now() + std::chrono::seconds(10);
+    finish_time = std::chrono::steady_clock::now() + std::chrono::seconds(5);
     while (std::chrono::steady_clock::now() < finish_time)
     {
-        auto rand_value = rand_metric_gen(gen);
         auto http_metric_value = http_metric_gen(gen);
-        rand_avg_metric->add(rand_value);
         http_metric->add(http_metric_value);
-        std::cout << "Add Avg metric value: " << rand_value << " HTTP metric value: " << http_metric_value << std::endl;
+        std::cout << "HTTP metric value: " << http_metric_value << std::endl;
 
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
