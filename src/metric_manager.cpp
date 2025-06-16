@@ -15,9 +15,9 @@ void MetricManager::writeLoop()
     while (is_running_)
     {
         std::unique_lock<std::mutex> lock(thread_control_mutex_);
-
+        const auto curr_interval = std::chrono::milliseconds(interval_ms_.load());
         // waiting for the time interval or the stop signal
-        if (cv_.wait_for(lock, interval_, [this]
+        if (cv_.wait_for(lock, curr_interval, [this]
                          { return !is_running_; }))
         {
             break;
@@ -29,6 +29,16 @@ void MetricManager::writeLoop()
 void MetricManager::flush()
 {
     std::lock_guard<std::mutex> lock(metrics_mutex_);
+
+    if (is_file_error_)
+    {
+        for (const auto &metric : metrics_)
+        {
+            metric->reset();
+        }
+        return;
+    }
+
     if (metrics_.empty())
         return;
 
@@ -62,10 +72,20 @@ void MetricManager::flush()
     {
         file_stream_ << ss.str();
         file_stream_.flush();
+        if (file_stream_.fail())
+        {
+            is_file_error_ = true;
+            std::cerr << "Error: Failed to write metrics to file." << std::endl;
+            file_stream_.clear();
+        }
     }
     else
     {
-        std::cerr << "Warning: File is not open." << std::endl;
+        if (!is_file_error_)
+        {
+            is_file_error_ = true;
+            std::cerr << "Warning: File is not open." << std::endl;
+        }
     }
 
     for (const auto &metric : metrics_)
@@ -80,13 +100,29 @@ MetricManager &MetricManager::getInstance()
     return instance;
 }
 
+void MetricManager::setInterval(std::chrono::milliseconds new_interval)
+{
+    interval_ms_ = new_interval.count();
+}
+
+std::chrono::milliseconds MetricManager::getInterval() const
+{
+    return std::chrono::milliseconds(interval_ms_.load());
+}
+
+void MetricManager::clearMetrics()
+{
+    std::lock_guard<std::mutex> lock(metrics_mutex_);
+    metrics_.clear();
+}
+
 void MetricManager::start(const std::string &filepath, std::chrono::milliseconds interval)
 {
     if (is_running_)
         return;
 
     filepath_ = filepath;
-    interval_ = interval;
+    interval_ms_ = interval.count();
 
     file_stream_.open(filepath_, std::ios::out | std::ios::app);
     if (!file_stream_.is_open())

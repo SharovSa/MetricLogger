@@ -40,9 +40,9 @@ int main()
     }
 
     auto &mm = MetricManager::getInstance();
-    auto cpu_metric = mm.registerMetric<CpuUtilizationMetric>("CPU");
-    auto http_metric = mm.registerMetric<CntMetric>("HTTP requests RPS");
-    auto rand_avg_metric = mm.registerMetric<AvgMetric>("Rand Avg value");
+    auto cpu_metric = mm.addMetric<CpuUtilizationMetric>("CPU");
+    auto http_metric = mm.addMetric<CntMetric>("HTTP requests RPS");
+    auto rand_avg_metric = mm.addMetric<AvgMetric>("Rand Avg value");
 
     // Start the logger with a 1-second interval
     mm.start("metrics.log", std::chrono::seconds(1));

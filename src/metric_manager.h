@@ -16,7 +16,8 @@ class MetricManager
 {
 private:
     std::atomic<bool> is_running_{false};
-    std::chrono::milliseconds interval_{};
+    std::atomic<bool> is_file_error_{false};
+    std::atomic<long long> interval_ms_;
     std::string filepath_;
     std::ofstream file_stream_;
 
@@ -44,7 +45,7 @@ public:
     MetricManager &operator=(MetricManager &&) = delete;
 
     template <typename T, typename... Args>
-    T *registerMetric(Args &...args);
+    T *addMetric(Args &...args);
 
     /**
      * @brief Starts the metric manager.
@@ -62,6 +63,25 @@ public:
      * Stops the writing thread and closes the file.
      */
     void stop();
+
+    /**
+     * @brief Set the time interval between logging.
+     *
+     * @param new_interval new time interval
+     */
+    void setInterval(std::chrono::milliseconds new_interval);
+
+    /**
+     * @brief Get the time interval between logging.
+     *
+     * @return time interval, ms
+     */
+    std::chrono::milliseconds getInterval() const;
+
+    /**
+     * @brief Delete all metrics
+     */
+    void clearMetrics();
 };
 
 /**
@@ -73,7 +93,7 @@ public:
  * @return Pointer to the created metric.
  */
 template <typename T, typename... Args>
-T *MetricManager::registerMetric(Args &...args)
+T *MetricManager::addMetric(Args &...args)
 {
     auto metric = std::make_unique<T>(std::forward<Args>(args)...);
     T *ptr = metric.get();
