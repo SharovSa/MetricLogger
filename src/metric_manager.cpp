@@ -22,7 +22,7 @@ void MetricManager::writeLoop()
         {
             break;
         }
-
+        lock.unlock();
         flush();
     }
 }
@@ -39,9 +39,9 @@ void MetricManager::flush()
 
     // cross-platform selection of a thread-safe function
 #if defined(_WIN32)
-    gmtime_s(&time_info, &now_c);
+    localtime_s(&time_info, &now_c);
 #else
-    gmtime_r(&now_c, &time_info);
+    localtime_r(&now_c, &time_info);
 #endif
 
     std::stringstream ss;

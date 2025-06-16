@@ -19,13 +19,13 @@
     ```bash 
     g++ -std=c++17 -o metrics_app ./src/main.cpp ./src/metric_manager.cpp ./src/cnt_metric.cpp ./src/avg_metric.cpp ./src/cpu_utilization_metric.cpp -pthread
 
-    ./metrics_app.exe
+    ./metrics_app (.exe для Windows)
     ```
 2. Через cmake
     ```bash
     cmake -S . -B build
     cmake --build build
-    ./build/MetricLogger.exe
+    ./build/MetricLogger (.exe для Windows)
     ```
 
 Результат работы будет в файле metric.log
